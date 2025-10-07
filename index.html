@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Interactive Map of Chauras Campus</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Interactive campus map of HNBGU Chauras campus">
+  <meta name="author" content="HNBGU GIS Team">
+  <link rel="icon" type="image/png" href="https://hnbgu.ac.in/sites/default/files/HNBG-new-logo.png">
+  <link href="https://unpkg.com/maplibre-gl@latest/dist/maplibre-gl.css" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui@4/dist/fancybox.css" />
+
+<style>
+  body {
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+  }
+
+  /* Header */
+  .hnbgu-header {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 6px 15px;
+    background: linear-gradient(90deg, #006400, #00a86b);
+    color: #fff;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+  }
+  .hnbgu-header .logo { height: 50px; }
+  .title-block { display: flex; flex-direction: column; line-height: 1.2; }
+  .title-hindi { font-size: 16px; font-weight: bold; }
+  .title-english {
+    font-size: 18px;
+    font-weight: bold;
+    border-bottom: 2px solid rgba(255,255,255,0.7);
+    padding-bottom: 2px;
+  }
+  .subtitle { font-size: 13px; font-style: italic; }
+
+  .map-title-banner {
+    background: linear-gradient(90deg, #004d00, #00a86b);
+    color: #fff;
+    text-align: center;
+    font-size: 16px;
+    font-weight: bold;
+    padding: 6px 0;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    letter-spacing: 0.5px;
+  }
+
+  .main-layout {
+    display: flex;
+    flex: 1;
+    min-height: 0;
+  }
+
+  /* Side panels */
+  .departments-panel,
+  .legend-panel {
+    width: 220px;
+    background: #f9f9f9;
+    padding: 10px;
+    overflow-y: auto;
+    max-height: calc(100vh - 150px);
+    position: relative; /* needed for toggle-tab positioning */
+
+    scrollbar-width: thin;
+    scrollbar-color: #888 #f9f9f9;
+  }
+  .departments-panel::-webkit-scrollbar,
+  .legend-panel::-webkit-scrollbar {
+    width: 8px;
+  }
+  .departments-panel::-webkit-scrollbar-thumb,
+  .legend-panel::-webkit-scrollbar-thumb {
+    background: #888;
+  }
+
+  .departments-panel { border-right: 2px solid #ccc; }
+  .legend-panel { border-left: 2px solid #ccc; }
+  .departments-panel h3,
+  .legend-panel h3 { margin-top: 0; }
+
+  /* Map container */
+  .map-container {
+    flex: 1;
+    border: 3px solid #006400;
+    margin: 5px;
+    box-shadow: 0 0 8px rgba(0,0,0,0.2);
+    display: flex;
+  }
+  #map { flex: 1; }
+
+  /* Legend list */
+  .legend-panel ul { list-style: none; padding: 0; margin: 0; }
+  .legend-panel li { display: flex; align-items: center; margin-bottom: 6px; }
+  .legend-color {
+    width: 18px;
+    height: 18px;
+    margin-right: 8px;
+    border: 1px solid #333;
+  }
+
+  footer {
+    background: linear-gradient(90deg, #006400, #00a86b);
+    color: #fff;
+    padding: 10px;
+    text-align: center;
+    font-size: 14px;
+    position: sticky;
+    bottom: 0;
+    box-shadow: 0 -2px 6px rgba(0,0,0,0.2);
+  }
+  footer p { margin: 0; }
+
+  .maplibregl-popup-content img { max-width: 100%; height: auto; }
+
+  .maplibregl-canvas { cursor: default !important; }
+  #map { cursor: default; }
+  #map:active { cursor: default; }
+
+  /* Panel header */
+  .panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  /* Toggle buttons */
+  .toggle-btn {
+    align-self: flex-start;       /* align with top of panels */
+    margin-top: 10px;             /* small spacing from top */
+    width: 28px;
+    height: 28px;
+    line-height: 26px;
+    text-align: center;
+    background: #006400;
+    color: #fff;
+    font-weight: bold;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    user-select: none;
+    z-index: 10;
+    box-shadow: 0 0 4px rgba(0,0,0,0.3);
+  }
+
+  /* Left toggle sits between left panel and map */
+  .left-toggle { margin-right: 4px; }
+
+  /* Right toggle sits between map and right panel */
+  .right-toggle { margin-left: 4px; }
+
+  /* Collapsed panels */
+  .departments-panel.collapsed,
+  .legend-panel.collapsed {
+    width: 0;
+    padding: 0;
+    border: none;
+    overflow: hidden;
+  }
+</style>
+
+
+
+
+</head>
+<body>
+
+<header class="hnbgu-header">
+  <a href="https://hnbgu.ac.in" target="_blank" class="logo-link">
+    <img src="https://hnbgu.ac.in/sites/default/files/HNBG-new-logo.png" alt="HNB Garhwal University Logo" class="logo">
+  </a>
+  <div class="title-block">
+    <div class="title-hindi">हेमवती नंदन बहुगुणा गढ़वाल विश्वविद्यालय</div>
+    <div class="title-english">Hemvati Nandan Bahuguna Garhwal University</div>
+    <div class="subtitle">(A Central University)</div>
+  </div>
+</header>
+
+<div class="map-title-banner">Interactive Map of Chauras Campus</div>
+
+<div class="main-layout">
+  <!-- Left: Departments -->
+  <aside class="departments-panel">
+    <div class="panel-header">
+      <h3>Landmarks</h3>
+    </div>
+    <ol>
+      <li>Department of Forestry and Natural Resources</li>
+      <li>Department of Horticulture</li>
+      <li>Department of Environmental Science</li>
+      <li>Department of Business Management</li>
+      <li>Department of Yogic Science, Department of Biochemistry and Department of Rural Technology</li>
+      <li>Department of Seed Science</li>
+      <li>Department of Mathematics</li>
+      <li>Department of Statistics</li>
+      <li>Mechanical Engineering Workshop</li>
+      <li>Department of Zoology</li>
+      <li>Department of Botany</li>
+      <li>Department of Microbiology Wing-C</li>
+      <li>Department of Biotechnology Wing-C</li>
+      <li>Department of Remote Sensing and GIS Applications</li>
+      <li>Department of Physics</li>
+      <li>Department of Chemistry</li>
+      <li>Department of Geology</li>
+      <li>Department of Geography</li>
+      <li>Department of Anthropology</li>
+      <li>Department of History and Archaeology</li>
+      <li>Department of Mass Communication</li>
+      <li>School of Commerce</li>
+      <li>Astro-physics</li>
+      <li>Department of Engineering and Technology</li>
+      <li>Department of Computer Science Engineering</li>
+      <li>Department of Pharmaceutical Sciences</li>
+      <li>Department of Mountain Tourism and Department of Hospitality</li>
+      <li>Department of Biotechnology</li>
+      <li>Department of Himalayan Aquatic Biodiversity</li>
+    </ol>
+  </aside>
+
+  <!-- Toggle button for left panel -->
+  <button class="toggle-btn left-toggle" onclick="togglePanel('departments-panel')">⟨</button>
+
+  <!-- Center: Map -->
+  <div class="map-container">
+    <div id="map"></div>
+  </div>
+
+  <!-- Toggle button for right panel -->
+  <button class="toggle-btn right-toggle" onclick="togglePanel('legend-panel')">⟩</button>
+
+  <!-- Right: Legend -->
+  <aside class="legend-panel">
+    <div class="panel-header">
+      <h3>Legend</h3>
+    </div>
+    <ul>
+      <li><span class="legend-color" style="background:#FFEC5C;"></span> Departments</li>
+      <li><span class="legend-color" style="background:#F5CA7A;"></span> Hostels</li>
+      <li><span class="legend-color" style="background:#FFAA00;"></span> Residences</li>
+      <li><span class="legend-color" style="background:#6677CD;"></span> Library</li>
+      <li><span class="legend-color" style="background:#B1F5A9;"></span> Washroom</li>
+      <li><span class="legend-color" style="background:#CD6666;"></span> Auditorium</li>
+      <li><span class="legend-color" style="background:#F5A27A;"></span> Gymnasium</li>
+      <li><span class="legend-color" style="background:#B4CF66;"></span> Open Area</li>
+      <li><span class="legend-color" style="background:#00E6A9;"></span> Water Cooler</li>
+      <li><span class="legend-color" style="background:#9ED7C2;"></span> Museum</li>
+      <li><span class="legend-color" style="background-image:url('https://i.ibb.co/v6QDTcDD/Wasteland.png'); background-size:cover;"></span> Wasteland</li>
+    </ul>
+  </aside>
+</div>
+
+
+<footer>
+  <p>
+    Map made by <strong>HNBGU GIS Team</strong> | 
+    Coded by <strong>XXXX</strong> | 
+    <strong>Department of Remote Sensing and GIS Applications</strong> |
+    Data © Hemvati Nandan Bahuguna Garhwal University
+  </p>
+</footer>
+
+
+
+
+
+<!-- MapLibre GL JS -->
+<script src="https://unpkg.com/maplibre-gl@latest/dist/maplibre-gl.js"></script>
+<!-- Fancybox v4 JS -->
+<script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@4/dist/fancybox.umd.js"></script>
+
+
+
+
+
+
+<script>
+try {
+  const imageBounds = [
+    [78.796059, 30.219447], // SW
+    [78.809470, 30.228646]  // NE
+  ];
+
+  const map = new maplibregl.Map({
+    container: 'map',
+    attributionControl: false,
+    style: {
+      version: 8,
+      sources: {
+        basemapImage: {
+          type: 'image',
+          url: 'https://i.ibb.co/ymDTVGMz/Campus-Chauras-23-page-0001-Copy.jpg',
+          coordinates: [
+            [78.795866, 30.228428], // NW
+            [78.809470, 30.228646], // NE
+            [78.809662, 30.219675], // SE
+            [78.796059, 30.219447]  // SW
+          ]
+        },
+        thematic: {
+          type: 'vector',
+          tiles: ['https://mike3762.github.io/thematic-layer/thematic_layer/{z}/{x}/{y}.pbf'],
+          minzoom: 14,
+          maxzoom: 20
+        }
+      },
+      layers: [
+        { id: 'basemap-image-layer', type: 'raster', source: 'basemapImage' },
+        {
+          id: 'thematic-fill',
+          type: 'fill',
+          source: 'thematic',
+          'source-layer': 'thematic_layer',
+          paint: { 'fill-color': '#3388ff', 'fill-opacity': 1 }
+        },
+        {
+          id: 'thematic-outline',
+          type: 'line',
+          source: 'thematic',
+          'source-layer': 'thematic_layer',
+          paint: { 'line-color': '#3388ff', 'line-width': 1 }
+        }
+      ]
+    },
+    center: [78.8039, 30.226],
+    zoom: 15,
+    maxBounds: imageBounds
+  });
+
+  map.on('load', () => {
+    map.fitBounds(
+      [
+      [78.796059, 30.219447], // SW
+      [78.809470, 30.228646]  // NE
+      ],
+      { padding: 20, animate: false }
+    );
+  });
+
+  // Hover highlight
+  let hoveredId = null;
+  map.on('mousemove', 'thematic-fill', (e) => {
+    if (e.features.length > 0) {
+      if (hoveredId !== null) {
+        map.setFeatureState(
+          { source: 'thematic', sourceLayer: 'thematic_layer', id: hoveredId },
+          { hover: false }
+        );
+      }
+      hoveredId = e.features[0].id;
+      map.setFeatureState(
+        { source: 'thematic', sourceLayer: 'thematic_layer', id: hoveredId },
+        { hover: true }
+      );
+
+      map.setPaintProperty('thematic-fill', 'fill-opacity', [
+        'case', ['boolean', ['feature-state', 'hover'], false], 0.7, 0.3
+      ]);
+      map.setPaintProperty('thematic-outline', 'line-width', [
+        'case', ['boolean', ['feature-state', 'hover'], false], 2, 0
+      ]);
+    }
+  });
+
+  map.on('mouseleave', 'thematic-fill', () => {
+    if (hoveredId !== null) {
+      map.setFeatureState(
+        { source: 'thematic', sourceLayer: 'thematic_layer', id: hoveredId },
+        { hover: false }
+      );
+    }
+    hoveredId = null;
+  });
+
+  // Track the active popup globally
+  let activePopup = null;
+
+  // CLICK: build popup with one clean "Open Gallery" link
+  map.on('click', 'thematic-fill', (e) => {
+    if (!e.features || !e.features[0]) return;
+    const props = e.features[0].properties || {};
+
+    const name = props.Name || 'Unnamed Feature';
+    const type = props.Type || '';
+    const desc = props.Desc || '';
+    const longDesc = props.LongDesc || '';
+    const image = props.Image || '';
+    const link = props.Link || '';
+
+    // Parse gallery
+    let galleryItems = [];
+    const g = props.Gallery;
+    try {
+      if (Array.isArray(g)) {
+        galleryItems = g;
+      } else if (typeof g === 'string') {
+        const s = g.trim();
+        if (s.startsWith('[') && s.endsWith(']')) {
+          const parsed = JSON.parse(s);
+          if (Array.isArray(parsed)) galleryItems = parsed;
+        } else {
+          galleryItems = s.split(/[,\n;]\s*/).filter(Boolean);
+        }
+      }
+    } catch {
+      galleryItems = String(g ?? '').split(/[,\n;]\s*/).filter(Boolean);
+    }
+
+    // Close the previous popup and any Fancybox modal
+    if (activePopup) {
+      activePopup.remove();
+      activePopup = null;
+    }
+    if (Fancybox.getInstance()) {
+      document.activeElement?.blur();
+      Fancybox.close(true); // close instantly, skip animation
+    }
+
+    const caption = `<strong>${name}</strong><br>${longDesc || desc || ''}`;
+    const galleryHTML = galleryItems.length
+      ? `
+        <p>
+          <a href="${galleryItems[0]}" data-fancybox="gallery-${name}" data-caption="${caption}">
+            Open Gallery
+          </a>
+        </p>
+        <div style="display:none;">
+          ${galleryItems.slice(1).map(u =>
+            `<a href="${u}" data-fancybox="gallery-${name}" data-caption="${caption}"></a>`
+          ).join('')}
+        </div>
+      `
+      : `<p style="opacity:0.7"><em>No gallery available</em></p>`;
+
+    const imageHTML = image ? `<img src="${image}" alt="${name}" style="max-width:100%; margin:6px 0;">` : '';
+    const descHTML = desc ? `<p>${desc}</p>` : '';
+    const longDescHTML = longDesc ? `<p>${longDesc}</p>` : '';
+    const linkHTML = link ? `<p><a href="${link}" target="_blank" rel="noopener">More info</a></p>` : '';
+
+    // Defer popup creation to next animation frame for stability
+    requestAnimationFrame(() => {
+      activePopup = new maplibregl.Popup({
+          closeButton: true,
+          closeOnClick: true,
+          anchor: 'auto',
+          maxWidth: '300px'
+        })
+        .setLngLat(e.lngLat)
+        .setHTML(`
+          <div class="popup-content">
+            <h3>${name}</h3>
+            ${type ? `<p><em>${type}</em></p>` : ''}
+            ${imageHTML}
+            ${descHTML}
+            ${longDescHTML}
+            ${galleryHTML}
+            ${linkHTML}
+          </div>
+        `)
+        .addTo(map);
+
+      // Bind Fancybox to this popup’s content
+      const popupEl = activePopup.getElement();
+      const contentEl = popupEl.querySelector('.popup-content') || popupEl;
+      Fancybox.bind(contentEl, '[data-fancybox]', {});
+    });
+  });
+
+  // Cursor changes
+  map.on('mouseenter', 'thematic-fill', () => { map.getCanvas().style.cursor = 'default'; });
+  map.on('mouseleave', 'thematic-fill', () => { map.getCanvas().style.cursor = ''; });
+
+} catch (err) {
+  console.error('Map initialization failed:', err);
+}
+</script>
+
+
+
+
+<script> // toggle panel
+function togglePanel(panelClass) {
+  const panel = document.querySelector('.' + panelClass);
+  if (!panel) return;
+
+  // find the corresponding toggle button
+  let button;
+  if (panelClass === 'departments-panel') {
+    button = document.querySelector('.left-toggle');
+  } else if (panelClass === 'legend-panel') {
+    button = document.querySelector('.right-toggle');
+  }
+
+  // toggle collapsed state
+  panel.classList.toggle('collapsed');
+
+  // flip the arrow
+  if (button) {
+    if (panel.classList.contains('collapsed')) {
+      // panel is hidden → arrow points inward
+      button.textContent = (panelClass === 'departments-panel') ? '⟩' : '⟨';
+    } else {
+      // panel is visible → arrow points outward
+      button.textContent = (panelClass === 'departments-panel') ? '⟨' : '⟩';
+    }
+  }
+
+  // resize map
+  if (window.map) {
+    setTimeout(() => map.resize(), 300);
+  }
+}
+</script>
+
+
+
+
+
+
+
+</body>
+</html>
