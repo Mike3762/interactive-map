@@ -284,43 +284,48 @@
 
 
 <script>
-try {
-  const imageBounds = [
-    [78.796059, 30.219447], // SW
-    [78.809470, 30.228646]  // NE
-  ];
+// Nudge helper (still here if you need it for other things)
+function nudge([lon, lat], dLon = 0, dLat = 0) {
+  return [lon + dLon, lat + dLat];
+}
 
+try {
   const map = new maplibregl.Map({
     container: 'map',
     attributionControl: false,
     style: {
       version: 8,
       sources: {
-        basemapImage: {
-          type: 'image',
-          url: 'https://i.ibb.co/ymDTVGMz/Campus-Chauras-23-page-0001-Copy.jpg',
-          coordinates: [
-            [78.795866, 30.228428], // NW
-            [78.809470, 30.228646], // NE
-            [78.809662, 30.219675], // SE
-            [78.796059, 30.219447]  // SW
-          ]
+        // Replace static image with your hosted basemap tiles
+        campusBasemap: {
+          type: 'raster', // use 'vector' if you exported PBFs instead of PNGs
+          tiles: [
+            'https://mike3762.github.io/chauras-basemap/chauras_basemap/{z}/{x}/{y}.png'
+          ],
+          tileSize: 256,
+          minzoom: 14,
+          maxzoom: 20
         },
         thematic: {
           type: 'vector',
-          tiles: ['https://mike3762.github.io/thematic-layer/thematic_layer/{z}/{x}/{y}.pbf'],
+          tiles: [
+            'https://mike3762.github.io/thematic-layer/thematic_layer/{z}/{x}/{y}.pbf'
+          ],
           minzoom: 14,
           maxzoom: 20
         }
       },
       layers: [
-        { id: 'basemap-image-layer', type: 'raster', source: 'basemapImage' },
+        // Raster basemap layer
+        { id: 'campus-raster-layer', type: 'raster', source: 'campusBasemap' },
+
+        // Thematic layers (unchanged)
         {
           id: 'thematic-fill',
           type: 'fill',
           source: 'thematic',
           'source-layer': 'thematic_layer',
-          paint: { 'fill-color': '#3388ff', 'fill-opacity': 1 }
+          paint: { 'fill-color': '#3388ff', 'fill-opacity': 0 }
         },
         {
           id: 'thematic-outline',
@@ -333,14 +338,17 @@ try {
     },
     center: [78.802764, 30.224047],
     zoom: 15,
-    maxBounds: imageBounds
+    maxBounds: [
+      [78.7966, 30.2196], // SW
+      [78.8102, 30.2288]  // NE
+    ]
   });
 
   map.on('load', () => {
     map.fitBounds(
       [
-      [78.796059, 30.219447], // SW
-      [78.809470, 30.228646]  // NE
+        [78.7966, 30.2196], // SW
+        [78.8102, 30.2288]  // NE
       ],
       { padding: 20, animate: false }
     );
@@ -363,7 +371,7 @@ try {
       );
 
       map.setPaintProperty('thematic-fill', 'fill-opacity', [
-        'case', ['boolean', ['feature-state', 'hover'], false], 0.7, 0.3
+        'case', ['boolean', ['feature-state', 'hover'], false], 0.7, 0.0
       ]);
       map.setPaintProperty('thematic-outline', 'line-width', [
         'case', ['boolean', ['feature-state', 'hover'], false], 2, 0
@@ -422,7 +430,7 @@ try {
     }
     if (Fancybox.getInstance()) {
       document.activeElement?.blur();
-      Fancybox.close(true); // close instantly, skip animation
+      Fancybox.close(true);
     }
 
     const caption = `<strong>${name}</strong><br>${longDesc || desc || ''}`;
@@ -446,7 +454,6 @@ try {
     const longDescHTML = longDesc ? `<p>${longDesc}</p>` : '';
     const linkHTML = link ? `<p><a href="${link}" target="_blank" rel="noopener">More info</a></p>` : '';
 
-    // Defer popup creation to next animation frame for stability
     requestAnimationFrame(() => {
       activePopup = new maplibregl.Popup({
           closeButton: true,
@@ -468,7 +475,6 @@ try {
         `)
         .addTo(map);
 
-      // Bind Fancybox to this popup’s content
       const popupEl = activePopup.getElement();
       const contentEl = popupEl.querySelector('.popup-content') || popupEl;
       Fancybox.bind(contentEl, '[data-fancybox]', {});
@@ -520,8 +526,6 @@ function togglePanel(panelClass) {
   }
 }
 </script>
-
-
 
 
 
