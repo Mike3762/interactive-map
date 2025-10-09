@@ -284,21 +284,22 @@
 
 
 <script>
-// Nudge helper (still here if you need it for other things)
-function nudge([lon, lat], dLon = 0, dLat = 0) {
-  return [lon + dLon, lat + dLat];
-}
 
 try {
+  // Exact lon/lat bounds from your Canvas extent
+  const campusBounds = [
+    [78.7961, 30.2194], // SW
+    [78.8095, 30.2286]  // NE
+  ];
+
   const map = new maplibregl.Map({
     container: 'map',
     attributionControl: false,
     style: {
       version: 8,
       sources: {
-        // Replace static image with your hosted basemap tiles
         campusBasemap: {
-          type: 'raster', // use 'vector' if you exported PBFs instead of PNGs
+          type: 'raster',
           tiles: [
             'https://mike3762.github.io/chauras-basemap/chauras_basemap/{z}/{x}/{y}.png'
           ],
@@ -313,13 +314,26 @@ try {
           ],
           minzoom: 14,
           maxzoom: 20
+        },
+        campusFrame: {
+          type: 'geojson',
+          data: {
+            type: 'Feature',
+            geometry: {
+              type: 'Polygon',
+              coordinates: [[
+                [78.7961, 30.2194],
+                [78.7961, 30.2286],
+                [78.8095, 30.2286],
+                [78.8095, 30.2194],
+                [78.7961, 30.2194]
+              ]]
+            }
+          }
         }
       },
       layers: [
-        // Raster basemap layer
         { id: 'campus-raster-layer', type: 'raster', source: 'campusBasemap' },
-
-        // Thematic layers (unchanged)
         {
           id: 'thematic-fill',
           type: 'fill',
@@ -333,25 +347,24 @@ try {
           source: 'thematic',
           'source-layer': 'thematic_layer',
           paint: { 'line-color': '#3388ff', 'line-width': 1 }
+        },
+        {
+          id: 'campus-frame-outline',
+          type: 'line',
+          source: 'campusFrame',
+          paint: { 'line-color': '#000000', 'line-width': 2 }
         }
       ]
     },
-    center: [78.802764, 30.224047],
-    zoom: 15,
-    maxBounds: [
-      [78.7966, 30.2196], // SW
-      [78.8102, 30.2288]  // NE
-    ]
+    maxBounds: campusBounds
   });
 
+  // expose map globally so togglePanel can call map.resize()
+  window.map = map;
+
   map.on('load', () => {
-    map.fitBounds(
-      [
-        [78.7966, 30.2196], // SW
-        [78.8102, 30.2288]  // NE
-      ],
-      { padding: 20, animate: false }
-    );
+    // Zoom out a bit more with padding
+    map.fitBounds(campusBounds, { padding: 100, animate: false });
   });
 
   // Hover highlight
@@ -404,7 +417,6 @@ try {
     const image = props.Image || '';
     const link = props.Link || '';
 
-    // Parse gallery
     let galleryItems = [];
     const g = props.Gallery;
     try {
@@ -423,7 +435,6 @@ try {
       galleryItems = String(g ?? '').split(/[,\n;]\s*/).filter(Boolean);
     }
 
-    // Close the previous popup and any Fancybox modal
     if (activePopup) {
       activePopup.remove();
       activePopup = null;
@@ -481,7 +492,6 @@ try {
     });
   });
 
-  // Cursor changes
   map.on('mouseenter', 'thematic-fill', () => { map.getCanvas().style.cursor = 'default'; });
   map.on('mouseleave', 'thematic-fill', () => { map.getCanvas().style.cursor = ''; });
 
@@ -520,10 +530,13 @@ function togglePanel(panelClass) {
     }
   }
 
-  // resize map
-  if (window.map) {
-    setTimeout(() => map.resize(), 300);
-  }
+// resize map and re‑fit to bounds
+if (window.map) {
+  setTimeout(() => {
+    map.resize();
+    map.fitBounds([campusBounds], { padding: 100, animate: false });
+  }, 300);
+}
 }
 </script>
 
