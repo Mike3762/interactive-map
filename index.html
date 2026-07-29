@@ -10,168 +10,44 @@
   <link href="https://unpkg.com/maplibre-gl@latest/dist/maplibre-gl.css" rel="stylesheet" />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui@4/dist/fancybox.css" />
 
-<style>
-  body {
-    margin: 0;
-    padding: 0;
-    display: flex;
-    flex-direction: column;
-    min-height: 100vh;
-  }
-
-  /* Header */
-  .hnbgu-header {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-    padding: 6px 15px;
-    background: linear-gradient(90deg, #006400, #00a86b);
-    color: #fff;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
-
-    -webkit-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
-    user-select: none;
-  }
-  .hnbgu-header .logo { height: 50px; }
-  .title-block { display: flex; flex-direction: column; line-height: 1.2; }
-  .title-hindi { font-size: 16px; font-weight: bold; }
-  .title-english {
-    font-size: 18px;
-    font-weight: bold;
-    border-bottom: 2px solid rgba(255,255,255,0.7);
-    padding-bottom: 2px;
-  }
-  .subtitle { font-size: 13px; font-style: italic; }
-
-  .map-title-banner {
-    background: linear-gradient(90deg, #004d00, #00a86b);
-    color: #fff;
-    text-align: center;
-    font-size: 16px;
-    font-weight: bold;
-    padding: 6px 0;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-    letter-spacing: 0.5px;
-  }
-
-  .main-layout {
-    display: flex;
-    flex: 1;
-    min-height: 0;
-  }
-
-  /* Side panels */
-  .departments-panel,
-  .legend-panel {
-    width: 220px;
-    background: #f9f9f9;
-    padding: 10px;
-    overflow-y: auto;
-    max-height: calc(100vh - 150px);
-    position: relative; /* needed for toggle-tab positioning */
-
-    scrollbar-width: thin;
-    scrollbar-color: #888 #f9f9f9;
-  }
-  .departments-panel::-webkit-scrollbar,
-  .legend-panel::-webkit-scrollbar {
-    width: 8px;
-  }
-  .departments-panel::-webkit-scrollbar-thumb,
-  .legend-panel::-webkit-scrollbar-thumb {
-    background: #888;
-  }
-
-  .departments-panel { border-right: 2px solid #ccc; }
-  .legend-panel { border-left: 2px solid #ccc; }
-  .departments-panel h3,
-  .legend-panel h3 { margin-top: 0; }
-
-  /* Map container */
-  .map-container {
-    flex: 1;
-    border: 3px solid #006400;
-    margin: 5px;
-    box-shadow: 0 0 8px rgba(0,0,0,0.2);
-    display: flex;
-  }
-  #map { flex: 1; }
-
-  /* Legend list */
-  .legend-panel ul { list-style: none; padding: 0; margin: 0; }
-  .legend-panel li { display: flex; align-items: center; margin-bottom: 6px; }
-  .legend-color {
-    width: 18px;
-    height: 18px;
-    margin-right: 8px;
-    border: 1px solid #333;
-  }
-
-  footer {
-    background: linear-gradient(90deg, #006400, #00a86b);
-    color: #fff;
-    padding: 10px;
-    text-align: center;
-    font-size: 14px;
-    position: sticky;
-    bottom: 0;
-    box-shadow: 0 -2px 6px rgba(0,0,0,0.2);
-  }
-  footer p { margin: 0; }
-
-  .maplibregl-popup-content img { max-width: 100%; height: auto; }
-
-  .maplibregl-canvas { cursor: default !important; }
-  #map { cursor: default; }
-  #map:active { cursor: default; }
-
-  /* Panel header */
-  .panel-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-
-  /* Toggle buttons */
-  .toggle-btn {
-    align-self: flex-start;       /* align with top of panels */
-    margin-top: 10px;             /* small spacing from top */
-    width: 28px;
-    height: 28px;
-    line-height: 26px;
-    text-align: center;
-    background: #006400;
-    color: #fff;
-    font-weight: bold;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    user-select: none;
-    z-index: 10;
-    box-shadow: 0 0 4px rgba(0,0,0,0.3);
-  }
-
-  /* Left toggle sits between left panel and map */
-  .left-toggle { margin-right: 4px; }
-
-  /* Right toggle sits between map and right panel */
-  .right-toggle { margin-left: 4px; }
-
-  /* Collapsed panels */
-  .departments-panel.collapsed,
-  .legend-panel.collapsed {
-    width: 0;
-    padding: 0;
-    border: none;
-    overflow: hidden;
-  }
-</style>
-
-
-
-
+  <style>
+    body { margin:0; padding:0; display:flex; flex-direction:column; min-height:100vh; }
+    .hnbgu-header { display:flex; align-items:center; gap:15px; padding:6px 15px;
+      background:linear-gradient(90deg,#006400,#00a86b); color:#fff; box-shadow:0 2px 6px rgba(0,0,0,0.2);}
+    .hnbgu-header .logo { height:50px; }
+    .title-block { display:flex; flex-direction:column; line-height:1.2; }
+    .title-hindi { font-size:16px; font-weight:bold; }
+    .title-english { font-size:18px; font-weight:bold; border-bottom:2px solid rgba(255,255,255,0.7); padding-bottom:2px; }
+    .subtitle { font-size:13px; font-style:italic; }
+    .map-title-banner { background:linear-gradient(90deg,#004d00,#00a86b); color:#fff; text-align:center;
+      font-size:16px; font-weight:bold; padding:6px 0; box-shadow:0 2px 4px rgba(0,0,0,0.2); letter-spacing:0.5px;}
+    .main-layout { display:flex; flex:1; min-height:0; }
+    .departments-panel,.legend-panel { width:220px; background:#f9f9f9; padding:10px; overflow-y:auto;
+      max-height:calc(100vh - 150px); position:relative; scrollbar-width:thin; scrollbar-color:#888 #f9f9f9;}
+    .departments-panel::-webkit-scrollbar,.legend-panel::-webkit-scrollbar { width:8px; }
+    .departments-panel::-webkit-scrollbar-thumb,.legend-panel::-webkit-scrollbar-thumb { background:#888; }
+    .departments-panel { border-right:2px solid #ccc; }
+    .legend-panel { border-left:2px solid #ccc; }
+    .map-container { flex:1; border:3px solid #006400; margin:5px; box-shadow:0 0 8px rgba(0,0,0,0.2); display:flex; min-height:0; }
+    #map { flex:1; min-height:400px; }
+    .legend-panel ul { list-style:none; padding:0; margin:0; }
+    .legend-panel li { display:flex; align-items:center; margin-bottom:6px; }
+    .legend-color { width:18px; height:18px; margin-right:8px; border:1px solid #333; }
+    footer { background:linear-gradient(90deg,#006400,#00a86b); color:#fff; padding:10px; text-align:center;
+      font-size:14px; margin-top:auto; box-shadow:0 -2px 6px rgba(0,0,0,0.2);}
+    footer p { margin:0; }
+    .maplibregl-popup-content img { max-width:100%; height:auto; }
+    .maplibregl-canvas { cursor:default !important; }
+    #map { cursor:default; }
+    #map:active { cursor:default; }
+    .panel-header { display:flex; justify-content:space-between; align-items:center; }
+    .toggle-btn { align-self:flex-start; margin-top:10px; width:28px; height:28px; line-height:26px; text-align:center;
+      background:#006400; color:#fff; font-weight:bold; border:none; border-radius:4px; cursor:pointer; user-select:none;
+      z-index:10; box-shadow:0 0 4px rgba(0,0,0,0.3);}
+    .left-toggle { margin-right:4px; }
+    .right-toggle { margin-left:4px; }
+    .departments-panel.collapsed,.legend-panel.collapsed { width:0; padding:0; border:none; overflow:hidden; }
+  </style>
 </head>
 <body>
 
@@ -189,17 +65,14 @@
 <div class="map-title-banner">Interactive Map of Chauras Campus</div>
 
 <div class="main-layout">
-  <!-- Left: Departments -->
   <aside class="departments-panel">
-    <div class="panel-header">
-      <h3>Landmarks</h3>
-    </div>
+    <div class="panel-header"><h3>Landmarks</h3></div>
     <ol>
       <li>Department of Forestry and Natural Resources</li>
       <li>Department of Horticulture</li>
       <li>Department of Environmental Science</li>
       <li>Department of Business Management</li>
-      <li>Department of Yogic Science, Department of Biochemistry and Department of Rural Technology</li>
+      <li>Department of Yogic Science, Biochemistry, Rural Technology</li>
       <li>Department of Seed Science</li>
       <li>Department of Mathematics</li>
       <li>Department of Statistics</li>
@@ -221,28 +94,20 @@
       <li>Department of Engineering and Technology</li>
       <li>Department of Computer Science Engineering</li>
       <li>Department of Pharmaceutical Sciences</li>
-      <li>Department of Mountain Tourism and Department of Hospitality</li>
+      <li>Department of Mountain Tourism and Hospitality</li>
       <li>Department of Biotechnology</li>
       <li>Department of Himalayan Aquatic Biodiversity</li>
     </ol>
   </aside>
 
-  <!-- Toggle button for left panel -->
   <button class="toggle-btn left-toggle" onclick="togglePanel('departments-panel')">⟨</button>
 
-  <!-- Center: Map -->
-  <div class="map-container">
-    <div id="map"></div>
-  </div>
+  <div class="map-container"><div id="map"></div></div>
 
-  <!-- Toggle button for right panel -->
   <button class="toggle-btn right-toggle" onclick="togglePanel('legend-panel')">⟩</button>
 
-  <!-- Right: Legend -->
   <aside class="legend-panel">
-    <div class="panel-header">
-      <h3>Legend</h3>
-    </div>
+    <div class="panel-header"><h3>Legend</h3></div>
     <ul>
       <li><span class="legend-color" style="background:#FFEC5C;"></span> Departments</li>
       <li><span class="legend-color" style="background:#F5CA7A;"></span> Hostels</li>
@@ -259,7 +124,6 @@
   </aside>
 </div>
 
-
 <footer>
   <p>
     Map made by <strong>HNBGU GIS Team</strong> | 
@@ -269,27 +133,20 @@
   </p>
 </footer>
 
-
-
-
-
 <!-- MapLibre GL JS -->
 <script src="https://unpkg.com/maplibre-gl@latest/dist/maplibre-gl.js"></script>
 <!-- Fancybox v4 JS -->
 <script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@4/dist/fancybox.umd.js"></script>
 
-
-
-
-
+<link href="https://unpkg.com/maplibre-gl@3.6.1/dist/maplibre-gl.css" rel="stylesheet" />
+<script src="https://unpkg.com/maplibre-gl@3.6.1/dist/maplibre-gl.js"></script>
 
 <script>
-
 try {
-  // Exact lon/lat bounds from your Canvas extent
-  const campusBounds = [
-    [78.7961, 30.2194], // SW
-    [78.8095, 30.2286]  // NE
+  // Use consistent bounds for image and fitBounds
+  const imageBounds = [
+    [78.796059, 30.219447], // SW
+    [78.809470, 30.228646]  // NE
   ];
 
   const map = new maplibregl.Map({
@@ -298,42 +155,26 @@ try {
     style: {
       version: 8,
       sources: {
-        campusBasemap: {
-          type: 'raster',
-          tiles: [
-            'https://mike3762.github.io/chauras-basemap/chauras_basemap/{z}/{x}/{y}.png'
-          ],
-          tileSize: 256,
-          minzoom: 14,
-          maxzoom: 20
+        basemapImage: {
+          type: 'image',
+          url: 'https://i.ibb.co/ymDTVGMz/Campus-Chauras-23-page-0001-Copy.jpg',
+	coordinates: [
+  	[78.796059, 30.228646], // NW (top-left)
+  	[78.809470, 30.228646], // NE (top-right)
+	[78.809470, 30.219447], // SE (bottom-right)
+	[78.796059, 30.219447]  // SW (bottom-left)
+	]
+
         },
         thematic: {
           type: 'vector',
-          tiles: [
-            'https://mike3762.github.io/thematic-layer/thematic_layer/{z}/{x}/{y}.pbf'
-          ],
+          tiles: ['https://mike3762.github.io/thematic-layer/thematic_layer/{z}/{x}/{y}.pbf'],
           minzoom: 14,
           maxzoom: 20
-        },
-        campusFrame: {
-          type: 'geojson',
-          data: {
-            type: 'Feature',
-            geometry: {
-              type: 'Polygon',
-              coordinates: [[
-                [78.7961, 30.2194],
-                [78.7961, 30.2286],
-                [78.8095, 30.2286],
-                [78.8095, 30.2194],
-                [78.7961, 30.2194]
-              ]]
-            }
-          }
         }
       },
       layers: [
-        { id: 'campus-raster-layer', type: 'raster', source: 'campusBasemap' },
+        { id: 'basemap-image-layer', type: 'raster', source: 'basemapImage' },
         {
           id: 'thematic-fill',
           type: 'fill',
@@ -347,25 +188,23 @@ try {
           source: 'thematic',
           'source-layer': 'thematic_layer',
           paint: { 'line-color': '#3388ff', 'line-width': 1 }
-        },
-        {
-          id: 'campus-frame-outline',
-          type: 'line',
-          source: 'campusFrame',
-          paint: { 'line-color': '#000000', 'line-width': 2 }
         }
       ]
     },
-    maxBounds: campusBounds
+    center: [78.802764, 30.224047],
+    zoom: 15,
+    maxBounds: imageBounds
   });
 
-  // expose map globally so togglePanel can call map.resize()
   window.map = map;
 
   map.on('load', () => {
-    // Zoom out a bit more with padding
-    map.fitBounds(campusBounds, { padding: 100, animate: false });
-  });
+       map.fitBounds(imageBounds, { padding: 100, animate: false });
+
+      // Debug: log the coordinates MapLibre thinks it has
+      console.log('Image source coordinates:', map.getSource('basemapImage').coordinates);
+      });
+
 
   // Hover highlight
   let hoveredId = null;
@@ -382,7 +221,6 @@ try {
         { source: 'thematic', sourceLayer: 'thematic_layer', id: hoveredId },
         { hover: true }
       );
-
       map.setPaintProperty('thematic-fill', 'fill-opacity', [
         'case', ['boolean', ['feature-state', 'hover'], false], 0.7, 0.0
       ]);
@@ -402,14 +240,11 @@ try {
     hoveredId = null;
   });
 
-  // Track the active popup globally
+  // Popup logic
   let activePopup = null;
-
-  // CLICK: build popup with one clean "Open Gallery" link
   map.on('click', 'thematic-fill', (e) => {
     if (!e.features || !e.features[0]) return;
     const props = e.features[0].properties || {};
-
     const name = props.Name || 'Unnamed Feature';
     const type = props.Type || '';
     const desc = props.Desc || '';
@@ -420,9 +255,8 @@ try {
     let galleryItems = [];
     const g = props.Gallery;
     try {
-      if (Array.isArray(g)) {
-        galleryItems = g;
-      } else if (typeof g === 'string') {
+      if (Array.isArray(g)) galleryItems = g;
+      else if (typeof g === 'string') {
         const s = g.trim();
         if (s.startsWith('[') && s.endsWith(']')) {
           const parsed = JSON.parse(s);
@@ -435,29 +269,15 @@ try {
       galleryItems = String(g ?? '').split(/[,\n;]\s*/).filter(Boolean);
     }
 
-    if (activePopup) {
-      activePopup.remove();
-      activePopup = null;
-    }
-    if (Fancybox.getInstance()) {
-      document.activeElement?.blur();
-      Fancybox.close(true);
-    }
+    if (activePopup) { activePopup.remove(); activePopup = null; }
+    if (Fancybox.getInstance()) { document.activeElement?.blur(); Fancybox.close(true); }
 
     const caption = `<strong>${name}</strong><br>${longDesc || desc || ''}`;
     const galleryHTML = galleryItems.length
-      ? `
-        <p>
-          <a href="${galleryItems[0]}" data-fancybox="gallery-${name}" data-caption="${caption}">
-            Open Gallery
-          </a>
-        </p>
-        <div style="display:none;">
-          ${galleryItems.slice(1).map(u =>
-            `<a href="${u}" data-fancybox="gallery-${name}" data-caption="${caption}"></a>`
-          ).join('')}
-        </div>
-      `
+      ? `<p><a href="${galleryItems[0]}" data-fancybox="gallery-${name}" data-caption="${caption}">Open Gallery</a></p>
+         <div style="display:none;">
+           ${galleryItems.slice(1).map(u => `<a href="${u}" data-fancybox="gallery-${name}" data-caption="${caption}"></a>`).join('')}
+         </div>`
       : `<p style="opacity:0.7"><em>No gallery available</em></p>`;
 
     const imageHTML = image ? `<img src="${image}" alt="${name}" style="max-width:100%; margin:6px 0;">` : '';
@@ -466,26 +286,10 @@ try {
     const linkHTML = link ? `<p><a href="${link}" target="_blank" rel="noopener">More info</a></p>` : '';
 
     requestAnimationFrame(() => {
-      activePopup = new maplibregl.Popup({
-          closeButton: true,
-          closeOnClick: true,
-          anchor: 'auto',
-          maxWidth: '300px'
-        })
+      activePopup = new maplibregl.Popup({ closeButton:true, closeOnClick:true, anchor:'auto', maxWidth:'300px' })
         .setLngLat(e.lngLat)
-        .setHTML(`
-          <div class="popup-content">
-            <h3>${name}</h3>
-            ${type ? `<p><em>${type}</em></p>` : ''}
-            ${imageHTML}
-            ${descHTML}
-            ${longDescHTML}
-            ${galleryHTML}
-            ${linkHTML}
-          </div>
-        `)
+        .setHTML(`<div class="popup-content"><h3>${name}</h3>${type ? `<p><em>${type}</em></p>` : ''}${imageHTML}${descHTML}${longDescHTML}${galleryHTML}${linkHTML}</div>`)
         .addTo(map);
-
       const popupEl = activePopup.getElement();
       const contentEl = popupEl.querySelector('.popup-content') || popupEl;
       Fancybox.bind(contentEl, '[data-fancybox]', {});
@@ -500,49 +304,29 @@ try {
 }
 </script>
 
-
-
-
-<script> // toggle panel
+<script>
 function togglePanel(panelClass) {
   const panel = document.querySelector('.' + panelClass);
   if (!panel) return;
-
-  // find the corresponding toggle button
   let button;
-  if (panelClass === 'departments-panel') {
-    button = document.querySelector('.left-toggle');
-  } else if (panelClass === 'legend-panel') {
-    button = document.querySelector('.right-toggle');
-  }
-
-  // toggle collapsed state
+  if (panelClass === 'departments-panel') button = document.querySelector('.left-toggle');
+  else if (panelClass === 'legend-panel') button = document.querySelector('.right-toggle');
   panel.classList.toggle('collapsed');
-
-  // flip the arrow
   if (button) {
     if (panel.classList.contains('collapsed')) {
-      // panel is hidden → arrow points inward
       button.textContent = (panelClass === 'departments-panel') ? '⟩' : '⟨';
     } else {
-      // panel is visible → arrow points outward
       button.textContent = (panelClass === 'departments-panel') ? '⟨' : '⟩';
     }
   }
-
-// resize map and re‑fit to bounds
-if (window.map) {
-  setTimeout(() => {
-    map.resize();
-    map.fitBounds([campusBounds], { padding: 100, animate: false });
-  }, 300);
-}
+  if (window.map) {
+    setTimeout(() => {
+      map.resize();
+      map.fitBounds([[78.796059, 30.219447],[78.809470, 30.228646]], { padding: 100, animate: false });
+    }, 300);
+  }
 }
 </script>
-
-
-
-
 
 </body>
 </html>
