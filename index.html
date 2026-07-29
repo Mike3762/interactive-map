@@ -143,7 +143,7 @@
 
 <script>
 try {
-  // Use consistent bounds for image and fitBounds
+  // Define bounds for restricting navigation (optional)
   const imageBounds = [
     [78.796059, 30.219447], // SW
     [78.809470, 30.228646]  // NE
@@ -156,15 +156,13 @@ try {
       version: 8,
       sources: {
         basemapImage: {
-          type: 'image',
-          url: 'https://i.ibb.co/ymDTVGMz/Campus-Chauras-23-page-0001-Copy.jpg',
-	coordinates: [
-  	[78.796059, 30.228646], // NW (top-left)
-  	[78.809470, 30.228646], // NE (top-right)
-	[78.809470, 30.219447], // SE (bottom-right)
-	[78.796059, 30.219447]  // SW (bottom-left)
-	]
-
+          type: 'raster',
+          tiles: [
+            'https://mike3762.github.io/chauras-basemap/chauras_basemap/{z}/{x}/{y}.png'
+          ],
+          tileSize: 256,
+          minzoom: 14,
+          maxzoom: 20
         },
         thematic: {
           type: 'vector',
@@ -199,12 +197,9 @@ try {
   window.map = map;
 
   map.on('load', () => {
-       map.fitBounds(imageBounds, { padding: 100, animate: false });
-
-      // Debug: log the coordinates MapLibre thinks it has
-      console.log('Image source coordinates:', map.getSource('basemapImage').coordinates);
-      });
-
+    map.fitBounds(imageBounds, { padding: 100, animate: false });
+    console.log('Basemap raster tiles loaded');
+  });
 
   // Hover highlight
   let hoveredId = null;
@@ -240,7 +235,7 @@ try {
     hoveredId = null;
   });
 
-  // Popup logic
+  // Popup logic (unchanged)
   let activePopup = null;
   map.on('click', 'thematic-fill', (e) => {
     if (!e.features || !e.features[0]) return;
@@ -303,6 +298,7 @@ try {
   console.error('Map initialization failed:', err);
 }
 </script>
+
 
 <script>
 function togglePanel(panelClass) {
